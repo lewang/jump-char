@@ -11,9 +11,9 @@
 
 ;; Created: Mon Jan  9 22:41:43 2012 (+0800)
 ;; Version: 0.1
-;; Last-Updated: Wed Jan 11 20:43:48 2012 (+0800)
+;; Last-Updated: Wed Jan 11 20:46:33 2012 (+0800)
 ;;           By: Le Wang
-;;     Update #: 49
+;;     Update #: 50
 ;; URL: https://github.com/lewang/jump-char
 ;; Keywords:
 ;; Compatibility: 23+
@@ -104,7 +104,7 @@
     map))
 
 (defvar jump-char-store (make-hash-table :test 'eq :size 5))
-(defvar jump-char-lazy-highlight-face nil)
+(defvar jump-char-lazy-highlight-face lazy-highlight-face)
 (defvar jump-char-initial-char nil)
 
 (defsubst jump-char-equal (l r)
@@ -191,15 +191,15 @@
 
 ;;;###autoload
 (defun jump-char-forward ()
-  "When reading char,
+  "
+; next
 
-; previous
+, previous
 
-, next search_char next
+search_char next
 
- when promped, press current binding for
-`jump-char-forward' / `jump-char-backward' to reuse last
-input
+press current binding for `jump-char-forward' / `jump-char-backward' to reuse
+last input.
 "
   (interactive)
   (let ((backward (when (eq this-command 'jump-char-backward)

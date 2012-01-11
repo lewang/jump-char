@@ -1,33 +1,57 @@
-;;; jump-char.el --- navigation isearch
+;;; jump-char.el --- navigation by char based on isearch
 
 ;; this file is not part of Emacs
 
 ;; Copyright (C) 2012 Le Wang
 ;; Author: Le Wang
 ;; Maintainer: Le Wang
-;; Description: navigation isearch
+;; Description: navigation by char based on isearch
 ;; Author: Le Wang
 ;; Maintainer: Le Wang
 
 ;; Created: Mon Jan  9 22:41:43 2012 (+0800)
 ;; Version: 0.1
-;; Last-Updated: Wed Jan 11 19:45:59 2012 (+0800)
+;; Last-Updated: Wed Jan 11 20:25:09 2012 (+0800)
 ;;           By: Le Wang
-;;     Update #: 45
-;; URL:
+;;     Update #: 48
+;; URL: https://github.com/lewang/jump-char
 ;; Keywords:
-;; Compatibility:
+;; Compatibility: 23+
 
 ;;; Installation:
 
 ;;
+;;   (require 'jump-char)
 ;;
+;;   (global-set-key [(meta m)] 'jump-char-forward)
+;;   (global-set-key [(shift meta m)] 'jump-char-backward)
 ;;
+
+;; But what about `back-to-indentation' (bound to M-m by default)?  You should
+;; customize C-a to toggle between indentation and beginning of line like a
+;; civilized human being.
 
 ;;; Commentary:
 
+;; Navigate by char.  The best way to "get" it is to try it.
 ;;
+;; Interface:
 ;;
+;;   <char>   :: move to the next match in the current direction.
+;;   ;        :: next match forward (towards end of buffer)
+;;   ,        :: next match backward (towards beginning of buffer)
+;;   C-c C-c  :: invoke ace-jump-mode if available
+;;
+;; Any other key stops jump-char and edits as normal.
+;;
+;; The behaviour is strongly modeled after `iy-go-to-char' with the following
+;; differences:
+;;
+;;   * point always stays before match
+;;
+;;   * point always reflects buffer position after you exit jump-char
+;;
+;;   * lazy highlighting is available courtesy of isearch
 ;;
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

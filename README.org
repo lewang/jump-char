@@ -23,4 +23,4 @@ differences:
 
 - point always stays before match
 - point during search is same as after exiting
-- lazy highlighting is available courtesy of isearch
+- lazy highlighting courtesy of isearch

@@ -11,9 +11,9 @@
 
 ;; Created: Mon Jan  9 22:41:43 2012 (+0800)
 ;; Version: 0.1
-;; Last-Updated: Wed Jan 11 20:25:09 2012 (+0800)
+;; Last-Updated: Wed Jan 11 20:43:48 2012 (+0800)
 ;;           By: Le Wang
-;;     Update #: 48
+;;     Update #: 49
 ;; URL: https://github.com/lewang/jump-char
 ;; Keywords:
 ;; Compatibility: 23+
@@ -49,9 +49,9 @@
 ;;
 ;;   * point always stays before match
 ;;
-;;   * point always reflects buffer position after you exit jump-char
+;;   * point during search is same as after exiting
 ;;
-;;   * lazy highlighting is available courtesy of isearch
+;;   * lazy highlighting courtesy of isearch
 ;;
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

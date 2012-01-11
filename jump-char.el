@@ -1,19 +1,19 @@
-;;; jump-char.el --- navigation by char based on isearch
+;;; jump-char.el --- navigation by char
 
 ;; this file is not part of Emacs
 
 ;; Copyright (C) 2012 Le Wang
 ;; Author: Le Wang
 ;; Maintainer: Le Wang
-;; Description: navigation by char based on isearch
+;; Description: navigation by char
 ;; Author: Le Wang
 ;; Maintainer: Le Wang
 
 ;; Created: Mon Jan  9 22:41:43 2012 (+0800)
 ;; Version: 0.1
-;; Last-Updated: Wed Jan 11 20:46:33 2012 (+0800)
+;; Last-Updated: Wed Jan 11 22:33:55 2012 (+0800)
 ;;           By: Le Wang
-;;     Update #: 50
+;;     Update #: 52
 ;; URL: https://github.com/lewang/jump-char
 ;; Keywords:
 ;; Compatibility: 23+

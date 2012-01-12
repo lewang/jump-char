@@ -11,9 +11,9 @@
 
 ;; Created: Mon Jan  9 22:41:43 2012 (+0800)
 ;; Version: 0.1
-;; Last-Updated: Wed Jan 11 22:33:55 2012 (+0800)
+;; Last-Updated: Thu Jan 12 00:11:50 2012 (+0800)
 ;;           By: Le Wang
-;;     Update #: 52
+;;     Update #: 54
 ;; URL: https://github.com/lewang/jump-char
 ;; Keywords:
 ;; Compatibility: 23+
@@ -138,9 +138,10 @@
 (defun jump-char-repeat-forward ()
   "keep point at beginning of match"
   (interactive)
-  (when (or (jump-char-equal (aref isearch-string 0) (char-before))
-            (jump-char-equal (aref isearch-string 0) (char-after)))
-      (forward-char))
+  (if isearch-forward
+      (skip-chars-forward (string jump-char-initial-char))
+    (when isearch-success
+      (goto-char isearch-other-end)))
   (isearch-repeat-forward))
 
 (defun jump-char-repeat-backward ()
@@ -160,10 +161,10 @@
   (let* ((keylist (listify-key-sequence (this-command-keys)))
          (single-key-v (this-single-command-keys))
          (push-keys-p t)
-         (global-cmd (car (memq (lookup-key (current-global-map) single-key-v)
+         (global-jump-car-cmd (car (memq (lookup-key (current-global-map) single-key-v)
                                 '(jump-char-forward jump-char-backward))))
          (cmd (key-binding single-key-v nil t)))
-    (if (and global-cmd
+    (if (and global-jump-car-cmd
              (zerop (length isearch-string)))
         (progn
           (setq isearch-string (string jump-char-initial-char))

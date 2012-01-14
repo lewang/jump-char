@@ -11,9 +11,9 @@
 
 ;; Created: Mon Jan  9 22:41:43 2012 (+0800)
 ;; Version: 0.1
-;; Last-Updated: Sat Jan 14 18:39:16 2012 (+0800)
+;; Last-Updated: Sun Jan 15 01:21:12 2012 (+0800)
 ;;           By: Le Wang
-;;     Update #: 69
+;;     Update #: 93
 ;; URL: https://github.com/lewang/jump-char
 ;; Keywords:
 ;; Compatibility: 23+
@@ -35,12 +35,12 @@
 
 ;; Navigate by char.  The best way to "get" it is to try it.
 ;;
-;; Interface:
+;; Interface (while jumping):
 ;;
 ;;   <char>   :: move to the next match in the current direction.
 ;;   ;        :: next match forward (towards end of buffer)
 ;;   ,        :: next match backward (towards beginning of buffer)
-;;   C-c C-c  :: invoke ace-jump-mode if available
+;;   C-c C-c  :: invoke ace-jump-mode if available (also <M-/>)
 ;;
 ;; Any other key stops jump-char and edits as normal.
 ;;
@@ -100,7 +100,8 @@
     (define-key map (kbd ";") #'jump-char-repeat-forward)
     (define-key map (kbd ",") #'jump-char-repeat-backward)
     (when (featurep 'ace-jump-mode)
-      (define-key map (kbd "C-c C-c") #'jump-char-switch-to-ace))
+      (define-key map (kbd "C-c C-c") #'jump-char-switch-to-ace)
+      (define-key map (kbd "M-/") #'jump-char-switch-to-ace))
     map))
 
 (defvar jump-char-store (make-hash-table :test 'eq :size 5))
@@ -119,7 +120,43 @@
            (>= event ?\s)
            (<= event (max-char))))))
 
+(defun jump-char-isearch-regexp-compile (string)
+  "Transform a normal isearch query string to a regular
+expression suitable for jump-char.
+"
+  (concat (regexp-quote string)
+          "+"))
+
+(defun jump-char-search-forward (string &optional bound noerror count)
+  "A function suitable to be returned by
+`isearch-search-fun-function' (it is called like
+`search-forward')."
+  (let ((regexp (jump-char-isearch-regexp-compile string)))
+    (re-search-forward regexp bound t)))
+
+(defun jump-char-search-backward (string &optional bound noerror count)
+  "A function suitable to be returned by
+`isearch-search-fun-function' (it is called like
+`search-forward')."
+  ;; note: isearch-regexp forwards and backwards are not symmetrical.  That is
+  ;; backwards does not greedy match even with a greedy regexp.
+  (let* ((regexp (jump-char-isearch-regexp-compile string))
+         (res (re-search-backward regexp bound t)))
+    (when res
+      (if (looking-back regexp nil t)
+          (progn
+            (goto-char (match-beginning 0))
+            (looking-at regexp)
+            (point))
+        res))))
+
+(defun jump-char-search-fun-function ()
+  "See `isearch-search-fun-function' for meaning"
+  (if isearch-forward 'jump-char-search-forward 'jump-char-search-backward))
+
+
 (defun jump-char-cleanup ()
+  "clean up run from `isearch-mode-end-hook'"
   (maphash (lambda (key value)
              (if (functionp key)
                  (fset key value)
@@ -129,13 +166,17 @@
   (remove-hook 'isearch-mode-end-hook 'jump-char-cleanup))
 
 (defun jump-char-isearch-update-func ()
+  "update run from `isearch-update-post-hook'
+
+Specifically, make sure point is at beginning of match."
   (when (and isearch-forward
              isearch-success
              (not (zerop (length isearch-string)))
              (jump-char-equal (aref isearch-string 0) (char-before)))
-    (forward-char -1)))
+    (goto-char isearch-other-end)))
 
 (defun jump-char-isearch-message-prefix (&optional _c-q-hack ellipsis nonincremental)
+  "replace isearch message with jump-char mesage."
   (let ((msg (funcall (gethash 'isearch-message-prefix jump-char-store) _c-q-hack ellipsis nonincremental)))
     (setq msg (replace-regexp-in-string "\\`\\(.*?\\)I-search" "\\1jump-char" msg))
     (propertize msg
@@ -148,9 +189,9 @@
   (if (and (zerop (length isearch-string))
            (jump-char-printing-p (this-command-keys-vector)))
       (jump-char-process-char)
-    (if isearch-forward
-        (skip-chars-forward (string jump-char-initial-char))
-      (when isearch-success
+    (when isearch-success
+      (if isearch-forward
+          (goto-char (isearch-point-state (car isearch-cmds)))
         (goto-char isearch-other-end)))
     (isearch-repeat-forward)))
 
@@ -162,6 +203,7 @@
     (isearch-repeat-backward)))
 
 (defun jump-char-switch-to-ace ()
+  "start ace-jump-mode"
   (interactive)
   (let ((search-nonincremental-instead nil))
     (isearch-exit))
@@ -171,12 +213,13 @@
 
 (defun jump-char-process-char (&optional arg)
   (interactive "P")
-  (let* ((keylist (listify-key-sequence (this-command-keys-vector)))
+  (let* ((did-action-p t)
+         (keylist (listify-key-sequence (this-command-keys-vector)))
          (command-only-key-v (this-single-command-keys))
          (this-key-global-cmd (let ((isearch-mode 0))
-                     (key-binding command-only-key-v nil t)))
+                                (key-binding command-only-key-v nil t)))
          (this-key-is-global-jump-char (car (memq this-key-global-cmd
-                                                '(jump-char-forward jump-char-backward)))))
+                                                  '(jump-char-forward jump-char-backward)))))
     ;; (message "this-key-is-global-jump-char %s this-key-global-cmd %s" this-key-is-global-jump-char this-key-global-cmd)
     (cond ((and this-key-is-global-jump-char
                 (zerop (length isearch-string)))
@@ -184,18 +227,21 @@
            (funcall (if (eq this-key-global-cmd 'jump-char-forward)
                         'jump-char-repeat-forward
                       'jump-char-repeat-backward)))
-          ((and (jump-char-printing-p command-only-key-v))
+          ((jump-char-printing-p command-only-key-v)
            (if (zerop (length isearch-string))
                (progn
                  (isearch-printing-char)
                  (setq jump-char-initial-char last-command-event))
-             (when (eq last-command-event jump-char-initial-char)
-               (funcall (if isearch-forward 'jump-char-repeat-forward 'jump-char-repeat-backward)))))
+             (if (eq last-command-event jump-char-initial-char)
+                 (funcall (if isearch-forward 'jump-char-repeat-forward 'jump-char-repeat-backward))
+               (setq did-action-p nil))))
           (t
-           (apply 'isearch-unread keylist)
-           (setq prefix-arg arg)
-           (let ((search-nonincremental-instead nil))
-             (isearch-exit))))))
+           (setq did-action-p nil)))
+    (unless did-action-p
+      (apply 'isearch-unread keylist)
+      (setq prefix-arg arg)
+      (let ((search-nonincremental-instead nil))
+        (isearch-exit)))))
 
 ;;;###autoload
 (defun jump-char-forward ()
@@ -213,11 +259,13 @@ last input.
   (let ((backward (when (eq this-command 'jump-char-backward)
                     (setq backward t))))
     (puthash 'isearch-mode-map isearch-mode-map jump-char-store)
+    (puthash 'isearch-search-fun-function isearch-search-fun-function jump-char-store)
     (puthash 'lazy-highlight-face lazy-highlight-face jump-char-store)
     (puthash 'isearch-message-prefix (symbol-function 'isearch-message-prefix) jump-char-store)
     (add-hook 'isearch-mode-end-hook 'jump-char-cleanup)
     (add-hook 'isearch-update-post-hook 'jump-char-isearch-update-func)
     (setq isearch-mode-map jump-char-isearch-map)
+    (setq isearch-search-fun-function 'jump-char-search-fun-function)
     (setq lazy-highlight-face jump-char-lazy-highlight-face)
     (fset 'isearch-message-prefix (symbol-function 'jump-char-isearch-message-prefix))
     (funcall (if backward

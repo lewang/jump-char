@@ -11,9 +11,9 @@
 
 ;; Created: Mon Jan  9 22:41:43 2012 (+0800)
 ;; Version: 0.1
-;; Last-Updated: Thu Jan 12 00:11:50 2012 (+0800)
+;; Last-Updated: Sat Jan 14 18:39:16 2012 (+0800)
 ;;           By: Le Wang
-;;     Update #: 54
+;;     Update #: 69
 ;; URL: https://github.com/lewang/jump-char
 ;; Keywords:
 ;; Compatibility: 23+
@@ -59,7 +59,7 @@
 ;; This program is free software; you can redistribute it and/or
 ;; modify it under the terms of the GNU General Public License as
 ;; published by the Free Software Foundation; either version 3, or
-;; (at your option) any later version.
+:;; (at your option) any later version.
 ;;
 ;; This program is distributed in the hope that it will be useful,
 ;; but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -84,7 +84,7 @@
 
 (defvar jump-char-isearch-map
   (let ((map (make-sparse-keymap))
-        (exception-list '(isearch-abort))
+        (exception-list '(isearch-abort isearch-describe-key))
         isearch-commands)
     (flet ((remap (key def)
                   (if (symbolp def)
@@ -112,6 +112,13 @@
        (not (null r))
        (char-equal l r)))
 
+(defsubst jump-char-printing-p (event-v)
+  (when (eq (length event-v) 1)
+    (let ((event (aref event-v 0)))
+      (and (characterp event)
+           (>= event ?\s)
+           (<= event (max-char))))))
+
 (defun jump-char-cleanup ()
   (maphash (lambda (key value)
              (if (functionp key)
@@ -138,15 +145,21 @@
 (defun jump-char-repeat-forward ()
   "keep point at beginning of match"
   (interactive)
-  (if isearch-forward
-      (skip-chars-forward (string jump-char-initial-char))
-    (when isearch-success
-      (goto-char isearch-other-end)))
-  (isearch-repeat-forward))
+  (if (and (zerop (length isearch-string))
+           (jump-char-printing-p (this-command-keys-vector)))
+      (jump-char-process-char)
+    (if isearch-forward
+        (skip-chars-forward (string jump-char-initial-char))
+      (when isearch-success
+        (goto-char isearch-other-end)))
+    (isearch-repeat-forward)))
 
 (defun jump-char-repeat-backward ()
   (interactive)
-  (isearch-repeat-backward))
+  (if (and (zerop (length isearch-string))
+           (jump-char-printing-p (this-command-keys-vector)))
+      (jump-char-process-char)
+    (isearch-repeat-backward)))
 
 (defun jump-char-switch-to-ace ()
   (interactive)
@@ -156,39 +169,33 @@
       (call-interactively 'ace-jump-char-mode)
     (ace-jump-char-mode jump-char-initial-char)))
 
-(defun jump-char-process-char (arg)
+(defun jump-char-process-char (&optional arg)
   (interactive "P")
-  (let* ((keylist (listify-key-sequence (this-command-keys)))
-         (single-key-v (this-single-command-keys))
-         (push-keys-p t)
-         (global-jump-car-cmd (car (memq (lookup-key (current-global-map) single-key-v)
-                                '(jump-char-forward jump-char-backward))))
-         (cmd (key-binding single-key-v nil t)))
-    (if (and global-jump-car-cmd
-             (zerop (length isearch-string)))
-        (progn
-          (setq isearch-string (string jump-char-initial-char))
-          (setq push-keys-p nil)
-          (funcall (if (eq cmd 'jump-char-forward)
-                       'jump-char-repeat-forward
-                     'jump-char-repeat-backward)))
-      (cond ((eq cmd 'isearch-printing-char)
-             (if (zerop (length isearch-string))
-                 (progn
-                   (isearch-printing-char)
-                   (setq jump-char-initial-char last-command-event)
-                   (setq push-keys-p nil))
-               (when (eq last-command-event jump-char-initial-char)
-                 (funcall (if isearch-forward 'jump-char-repeat-forward 'jump-char-repeat-backward))
-                 (setq push-keys-p nil))))
-            ((memq cmd '(isearch-describe-key))
-             (call-interactively cmd)
-             (setq push-keys-p nil))))
-    (when push-keys-p
-      (apply 'isearch-unread keylist)
-      (setq prefix-arg arg)
-      (let ((search-nonincremental-instead nil))
-        (isearch-exit)))))
+  (let* ((keylist (listify-key-sequence (this-command-keys-vector)))
+         (command-only-key-v (this-single-command-keys))
+         (this-key-global-cmd (let ((isearch-mode 0))
+                     (key-binding command-only-key-v nil t)))
+         (this-key-is-global-jump-char (car (memq this-key-global-cmd
+                                                '(jump-char-forward jump-char-backward)))))
+    ;; (message "this-key-is-global-jump-char %s this-key-global-cmd %s" this-key-is-global-jump-char this-key-global-cmd)
+    (cond ((and this-key-is-global-jump-char
+                (zerop (length isearch-string)))
+           (setq isearch-string (string jump-char-initial-char))
+           (funcall (if (eq this-key-global-cmd 'jump-char-forward)
+                        'jump-char-repeat-forward
+                      'jump-char-repeat-backward)))
+          ((and (jump-char-printing-p command-only-key-v))
+           (if (zerop (length isearch-string))
+               (progn
+                 (isearch-printing-char)
+                 (setq jump-char-initial-char last-command-event))
+             (when (eq last-command-event jump-char-initial-char)
+               (funcall (if isearch-forward 'jump-char-repeat-forward 'jump-char-repeat-backward)))))
+          (t
+           (apply 'isearch-unread keylist)
+           (setq prefix-arg arg)
+           (let ((search-nonincremental-instead nil))
+             (isearch-exit))))))
 
 ;;;###autoload
 (defun jump-char-forward ()
@@ -224,5 +231,5 @@ last input.
 
 
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; jump-char.el ends here
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; jump-char.el ends here

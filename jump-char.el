@@ -11,9 +11,9 @@
 
 ;; Created: Mon Jan  9 22:41:43 2012 (+0800)
 ;; Version: 0.1
-;; Last-Updated: Sun Jan 15 01:21:12 2012 (+0800)
+;; Last-Updated: Mon Jan 16 23:26:47 2012 (+0800)
 ;;           By: Le Wang
-;;     Update #: 93
+;;     Update #: 95
 ;; URL: https://github.com/lewang/jump-char
 ;; Keywords:
 ;; Compatibility: 23+
@@ -219,19 +219,22 @@ Specifically, make sure point is at beginning of match."
          (this-key-global-cmd (let ((isearch-mode 0))
                                 (key-binding command-only-key-v nil t)))
          (this-key-is-global-jump-char (car (memq this-key-global-cmd
-                                                  '(jump-char-forward jump-char-backward)))))
+                                                  '(jump-char-forward jump-char-backward))))
+         (repeat-command (if isearch-forward
+                             'jump-char-repeat-forward
+                           'jump-char-repeat-backward)))
     ;; (message "this-key-is-global-jump-char %s this-key-global-cmd %s" this-key-is-global-jump-char this-key-global-cmd)
     (cond ((and this-key-is-global-jump-char
                 (zerop (length isearch-string)))
            (setq isearch-string (string jump-char-initial-char))
-           (funcall (if (eq this-key-global-cmd 'jump-char-forward)
-                        'jump-char-repeat-forward
-                      'jump-char-repeat-backward)))
+           (funcall repeat-command))
           ((jump-char-printing-p command-only-key-v)
            (if (zerop (length isearch-string))
-               (progn
+               (let ((p (point)))
                  (isearch-printing-char)
-                 (setq jump-char-initial-char last-command-event))
+                 (setq jump-char-initial-char last-command-event)
+                 (when (= p (point))
+                   (funcall repeat-command)))
              (if (eq last-command-event jump-char-initial-char)
                  (funcall (if isearch-forward 'jump-char-repeat-forward 'jump-char-repeat-backward))
                (setq did-action-p nil))))

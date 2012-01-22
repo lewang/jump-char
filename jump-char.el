@@ -11,9 +11,9 @@
 
 ;; Created: Mon Jan  9 22:41:43 2012 (+0800)
 ;; Version: 0.1
-;; Last-Updated: Mon Jan 16 23:26:47 2012 (+0800)
+;; Last-Updated: Sun Jan 22 16:01:10 2012 (+0800)
 ;;           By: Le Wang
-;;     Update #: 95
+;;     Update #: 111
 ;; URL: https://github.com/lewang/jump-char
 ;; Keywords:
 ;; Compatibility: 23+
@@ -103,7 +103,7 @@
       (define-key map (kbd "C-c C-c") #'jump-char-switch-to-ace)
       (define-key map (kbd "M-/") #'jump-char-switch-to-ace))
     map))
-
+(defvar jump-char-mode nil)
 (defvar jump-char-store (make-hash-table :test 'eq :size 5))
 (defvar jump-char-lazy-highlight-face lazy-highlight-face)
 (defvar jump-char-initial-char nil)
@@ -158,30 +158,31 @@ expression suitable for jump-char.
 (defun jump-char-cleanup ()
   "clean up run from `isearch-mode-end-hook'"
   (maphash (lambda (key value)
-             (if (functionp key)
-                 (fset key value)
-               (set key value)))
+             (set key value))
            jump-char-store)
+  (setq jump-char-mode nil)
   (remove-hook 'isearch-update-post-hook 'jump-char-isearch-update-func)
   (remove-hook 'isearch-mode-end-hook 'jump-char-cleanup))
 
 (defun jump-char-isearch-update-func ()
   "update run from `isearch-update-post-hook'
 
-Specifically, make sure point is at beginning of match."
+Specifica
+lly, make sure point is at beginning of match."
   (when (and isearch-forward
              isearch-success
              (not (zerop (length isearch-string)))
              (jump-char-equal (aref isearch-string 0) (char-before)))
     (goto-char isearch-other-end)))
 
-(defun jump-char-isearch-message-prefix (&optional _c-q-hack ellipsis nonincremental)
+(defadvice isearch-message-prefix (after jump-char-prompt activate)
   "replace isearch message with jump-char mesage."
-  (let ((msg (funcall (gethash 'isearch-message-prefix jump-char-store) _c-q-hack ellipsis nonincremental)))
-    (setq msg (replace-regexp-in-string "\\`\\(.*?\\)I-search" "\\1jump-char" msg))
-    (propertize msg
-                'face 'minibuffer-prompt)))
-
+  (when jump-char-mode
+    (setq ad-return-value
+          (propertize (replace-regexp-in-string "\\`\\(.*?\\)I-search"
+                                                "\\1jump-char"
+                                                ad-return-value)
+                      'face 'minibuffer-prompt))))
 
 (defun jump-char-repeat-forward ()
   "keep point at beginning of match"
@@ -267,10 +268,10 @@ last input.
     (puthash 'isearch-message-prefix (symbol-function 'isearch-message-prefix) jump-char-store)
     (add-hook 'isearch-mode-end-hook 'jump-char-cleanup)
     (add-hook 'isearch-update-post-hook 'jump-char-isearch-update-func)
+    (setq jump-char-mode t)
     (setq isearch-mode-map jump-char-isearch-map)
     (setq isearch-search-fun-function 'jump-char-search-fun-function)
     (setq lazy-highlight-face jump-char-lazy-highlight-face)
-    (fset 'isearch-message-prefix (symbol-function 'jump-char-isearch-message-prefix))
     (funcall (if backward
                  'isearch-backward
                'isearch-forward)

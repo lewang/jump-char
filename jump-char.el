@@ -11,9 +11,9 @@
 
 ;; Created: Mon Jan  9 22:41:43 2012 (+0800)
 ;; Version: 0.1
-;; Last-Updated: Sun Jan 22 16:01:10 2012 (+0800)
+;; Last-Updated: Sat Mar 17 18:05:19 2012 (+0800)
 ;;           By: Le Wang
-;;     Update #: 111
+;;     Update #: 113
 ;; URL: https://github.com/lewang/jump-char
 ;; Keywords:
 ;; Compatibility: 23+
@@ -248,8 +248,10 @@ lly, make sure point is at beginning of match."
         (isearch-exit)))))
 
 ;;;###autoload
-(defun jump-char-forward ()
-  "
+(defun jump-char-forward (arg)
+  "With UNIVERSAL prefix arg <C-u>, invoke `ace-jump-line-mode'
+
+
 ; next
 
 , previous
@@ -259,23 +261,25 @@ search_char next
 press current binding for `jump-char-forward' / `jump-char-backward' to reuse
 last input.
 "
-  (interactive)
-  (let ((backward (when (eq this-command 'jump-char-backward)
-                    (setq backward t))))
-    (puthash 'isearch-mode-map isearch-mode-map jump-char-store)
-    (puthash 'isearch-search-fun-function isearch-search-fun-function jump-char-store)
-    (puthash 'lazy-highlight-face lazy-highlight-face jump-char-store)
-    (puthash 'isearch-message-prefix (symbol-function 'isearch-message-prefix) jump-char-store)
-    (add-hook 'isearch-mode-end-hook 'jump-char-cleanup)
-    (add-hook 'isearch-update-post-hook 'jump-char-isearch-update-func)
-    (setq jump-char-mode t)
-    (setq isearch-mode-map jump-char-isearch-map)
-    (setq isearch-search-fun-function 'jump-char-search-fun-function)
-    (setq lazy-highlight-face jump-char-lazy-highlight-face)
-    (funcall (if backward
-                 'isearch-backward
-               'isearch-forward)
-             nil t)))
+  (interactive "P")
+  (if (consp arg)
+      (ace-jump-line-mode)
+    (let ((backward (when (eq this-command 'jump-char-backward)
+                      (setq backward t))))
+      (puthash 'isearch-mode-map isearch-mode-map jump-char-store)
+      (puthash 'isearch-search-fun-function isearch-search-fun-function jump-char-store)
+      (puthash 'lazy-highlight-face lazy-highlight-face jump-char-store)
+      (puthash 'isearch-message-prefix (symbol-function 'isearch-message-prefix) jump-char-store)
+      (add-hook 'isearch-mode-end-hook 'jump-char-cleanup)
+      (add-hook 'isearch-update-post-hook 'jump-char-isearch-update-func)
+      (setq jump-char-mode t)
+      (setq isearch-mode-map jump-char-isearch-map)
+      (setq isearch-search-fun-function 'jump-char-search-fun-function)
+      (setq lazy-highlight-face jump-char-lazy-highlight-face)
+      (funcall (if backward
+                   'isearch-backward
+                 'isearch-forward)
+               nil t))))
 
 ;;;###autoload
 (defalias 'jump-char-backward 'jump-char-forward)

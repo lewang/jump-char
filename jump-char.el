@@ -11,9 +11,9 @@
 
 ;; Created: Mon Jan  9 22:41:43 2012 (+0800)
 ;; Version: 0.1
-;; Last-Updated: Sat Mar 17 18:05:19 2012 (+0800)
+;; Last-Updated: Wed Jul 18 14:09:56 2012 (+0800)
 ;;           By: Le Wang
-;;     Update #: 113
+;;     Update #: 115
 ;; URL: https://github.com/lewang/jump-char
 ;; Keywords:
 ;; Compatibility: 23+
@@ -242,7 +242,7 @@ lly, make sure point is at beginning of match."
           (t
            (setq did-action-p nil)))
     (unless did-action-p
-      (apply 'isearch-unread keylist)
+      (isearch-unread-key-sequence keylist)
       (setq prefix-arg arg)
       (let ((search-nonincremental-instead nil))
         (isearch-exit)))))

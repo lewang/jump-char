@@ -9,7 +9,6 @@
 | ;       | next match forward (towards end of buffer)        |
 | ,       | next match backward (towards beginning of buffer) |
 | C-c C-c | invoke `ace-jump-mode' if available               |
-|         |                                                   |
 
  Any other key stops jump-char and edits as normal.
 * [[https://github.com/winterTTr/ace-jump-mode/][ace-jump-mode]]

@@ -11,9 +11,9 @@
 
 ;; Created: Mon Jan  9 22:41:43 2012 (+0800)
 ;; Version: 0.1
-;; Last-Updated: Sun Aug 26 12:23:55 2012 (+0800)
+;; Last-Updated: Sun Aug 26 22:31:04 2012 (+0800)
 ;;           By: Le Wang
-;;     Update #: 118
+;;     Update #: 120
 ;; URL: https://github.com/lewang/jump-char
 ;; Keywords:
 ;; Compatibility: 23+
@@ -108,6 +108,14 @@
 (defvar jump-char-lazy-highlight-face lazy-highlight-face)
 (defvar jump-char-initial-char nil)
 
+;;; isearch implementation changed as of Emacs 24.3
+(defvar jump-char-isearch-point-func
+  (dolist (v '(isearch-point-state isearch--state-point)
+             (error "I don't understand this isearch."))
+    (when (fboundp v)
+      (return v))))
+
+
 (defsubst jump-char-equal (l r)
   (and (not (null l))
        (not (null r))
@@ -124,8 +132,7 @@
   "Transform a normal isearch query string to a regular
 expression suitable for jump-char.
 "
-  (concat (regexp-quote string)
-          "+"))
+  (concat (regexp-quote string) "+"))
 
 (defun jump-char-search-forward (string &optional bound noerror count)
   "A function suitable to be returned by
@@ -167,8 +174,7 @@ expression suitable for jump-char.
 (defun jump-char-isearch-update-func ()
   "update run from `isearch-update-post-hook'
 
-Specifica
-lly, make sure point is at beginning of match."
+Specifically, make sure point is at beginning of match."
   (when (and isearch-forward
              isearch-success
              (not (zerop (length isearch-string)))
@@ -183,13 +189,6 @@ lly, make sure point is at beginning of match."
                                                 "\\1jump-char"
                                                 ad-return-value)
                       'face 'minibuffer-prompt))))
-
-;;; isearch implementation changed as of Emacs 24.3
-(defvar jump-char-isearch-point-func
-  (or (dolist (v '(isearch-point-state isearch--state-point))
-        (when (fboundp v)
-          (return v)))
-      (error "I don't understand this isearch.")))
 
 (defun jump-char-repeat-forward ()
   "keep point at beginning of match"

@@ -11,9 +11,9 @@
 
 ;; Created: Mon Jan  9 22:41:43 2012 (+0800)
 ;; Version: 0.1
-;; Last-Updated: Wed Jul 18 14:09:56 2012 (+0800)
+;; Last-Updated: Sun Aug 26 12:23:55 2012 (+0800)
 ;;           By: Le Wang
-;;     Update #: 115
+;;     Update #: 118
 ;; URL: https://github.com/lewang/jump-char
 ;; Keywords:
 ;; Compatibility: 23+
@@ -184,6 +184,13 @@ lly, make sure point is at beginning of match."
                                                 ad-return-value)
                       'face 'minibuffer-prompt))))
 
+;;; isearch implementation changed as of Emacs 24.3
+(defvar jump-char-isearch-point-func
+  (or (dolist (v '(isearch-point-state isearch--state-point))
+        (when (fboundp v)
+          (return v)))
+      (error "I don't understand this isearch.")))
+
 (defun jump-char-repeat-forward ()
   "keep point at beginning of match"
   (interactive)
@@ -192,7 +199,7 @@ lly, make sure point is at beginning of match."
       (jump-char-process-char)
     (when isearch-success
       (if isearch-forward
-          (goto-char (isearch-point-state (car isearch-cmds)))
+          (goto-char (funcall jump-char-isearch-point-func (car isearch-cmds)))
         (goto-char isearch-other-end)))
     (isearch-repeat-forward)))
 

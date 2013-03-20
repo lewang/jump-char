@@ -11,9 +11,9 @@
 
 ;; Created: Mon Jan  9 22:41:43 2012 (+0800)
 ;; Version: 0.1
-;; Last-Updated: Wed Mar 20 10:44:45 2013 (+0800)
+;; Last-Updated: Wed Mar 20 10:49:21 2013 (+0800)
 ;;           By: Le Wang
-;;     Update #: 123
+;;     Update #: 124
 ;; URL: https://github.com/lewang/jump-char
 ;; Keywords:
 ;; Compatibility: 23+
@@ -37,7 +37,6 @@
 ;;
 ;; Interface (while jumping):
 ;;
-;;   <char>   :: move to the next match in the current direction.
 ;;   ;        :: next match forward (towards end of buffer)
 ;;   ,        :: next match backward (towards beginning of buffer)
 ;;   C-c C-c  :: invoke ace-jump-mode if available (also <M-/>)
@@ -242,9 +241,7 @@ Specifically, make sure point is at beginning of match."
                  (setq jump-char-initial-char last-command-event)
                  (when (= p (point))
                    (funcall repeat-command)))
-             (if (eq last-command-event jump-char-initial-char)
-                 (funcall (if isearch-forward 'jump-char-repeat-forward 'jump-char-repeat-backward))
-               (setq did-action-p nil))))
+             (setq did-action-p nil)))
           (t
            (setq did-action-p nil)))
     (unless did-action-p

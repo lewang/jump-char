@@ -37,6 +37,7 @@
 ;;
 ;; Interface (while jumping):
 ;;
+;;   <char>   :: move to the next match in the current direction.
 ;;   ;        :: next match forward (towards end of buffer)
 ;;   ,        :: next match backward (towards beginning of buffer)
 ;;   C-c C-c  :: invoke ace-jump-mode if available (also <M-/>)
@@ -79,7 +80,25 @@
 
 (provide 'jump-char)
 
+(defgroup jump-char nil
+  "navigation by char")
+
+(defcustom jump-char-use-initial-char t
+  "Use initial char to move to the next match in the current direction"
+  :type 'boolean
+  :group 'jump-char)
+
 (require 'ace-jump-mode nil t)
+
+(defcustom jump-char-key-forward ";"
+  "Default key used to go to next occurence of the char"
+  :type 'string
+  :group 'jump-char)
+
+(defcustom jump-char-key-backward ","
+  "Default key used to go to previous occurence of the char"
+  :type 'string
+  :group 'jump-char)
 
 (defvar jump-char-isearch-map
   (let ((map (make-sparse-keymap))
@@ -96,8 +115,10 @@
       (unless (memq cmd exception-list)
         (define-key map `[remap ,cmd] #'jump-char-process-char)))
     (set-keymap-parent map isearch-mode-map)
-    (define-key map (kbd ";") #'jump-char-repeat-forward)
-    (define-key map (kbd ",") #'jump-char-repeat-backward)
+    (unless (string= jump-char-key-forward "")
+      (define-key map (kbd jump-char-key-forward) #'jump-char-repeat-forward))
+    (unless (string= jump-char-key-backward "")
+      (define-key map (kbd jump-char-key-backward) #'jump-char-repeat-backward))
     (when (featurep 'ace-jump-mode)
       (define-key map (kbd "C-c C-c") #'jump-char-switch-to-ace)
       (define-key map (kbd "M-/") #'jump-char-switch-to-ace))
@@ -241,7 +262,10 @@ Specifically, make sure point is at beginning of match."
                  (setq jump-char-initial-char last-command-event)
                  (when (= p (point))
                    (funcall repeat-command)))
-             (setq did-action-p nil)))
+             (if (and jump-char-use-initial-char 
+                      (eq last-command-event jump-char-initial-char))
+                 (funcall (if isearch-forward 'jump-char-repeat-forward 'jump-char-repeat-backward))
+               (setq did-action-p nil))))
           (t
            (setq did-action-p nil)))
     (unless did-action-p
@@ -267,16 +291,17 @@ last input.
   (interactive "P")
   (if (consp arg)
       (ace-jump-line-mode)
-    (puthash 'isearch-mode-map isearch-mode-map jump-char-store)
-    (puthash 'isearch-search-fun-function isearch-search-fun-function jump-char-store)
-    (puthash 'lazy-highlight-face lazy-highlight-face jump-char-store)
-    (puthash 'isearch-message-prefix (symbol-function 'isearch-message-prefix) jump-char-store)
-    (add-hook 'isearch-mode-end-hook 'jump-char-cleanup)
-    (add-hook 'isearch-update-post-hook 'jump-char-isearch-update-func)
-    (setq jump-char-mode t)
-    (setq isearch-mode-map jump-char-isearch-map)
-    (setq isearch-search-fun-function 'jump-char-search-fun-function)
-    (setq lazy-highlight-face jump-char-lazy-highlight-face)
+    (unless jump-char-mode
+      (puthash 'isearch-mode-map isearch-mode-map jump-char-store)
+      (puthash 'isearch-search-fun-function isearch-search-fun-function jump-char-store)
+      (puthash 'lazy-highlight-face lazy-highlight-face jump-char-store)
+      (puthash 'isearch-message-prefix (symbol-function 'isearch-message-prefix) jump-char-store)
+      (add-hook 'isearch-mode-end-hook 'jump-char-cleanup)
+      (add-hook 'isearch-update-post-hook 'jump-char-isearch-update-func)
+      (setq jump-char-mode t)
+      (setq isearch-mode-map jump-char-isearch-map)
+      (setq isearch-search-fun-function 'jump-char-search-fun-function)
+      (setq lazy-highlight-face jump-char-lazy-highlight-face))
     (funcall (if backward
                  'isearch-backward
                'isearch-forward)

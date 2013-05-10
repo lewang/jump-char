@@ -90,6 +90,16 @@
 
 (require 'ace-jump-mode nil t)
 
+(defcustom jump-char-key-forward ";"
+  "Default key used to go to next occurence of the char"
+  :type 'string
+  :group 'jump-char)
+
+(defcustom jump-char-key-backward ","
+  "Default key used to go to previous occurence of the char"
+  :type 'string
+  :group 'jump-char)
+
 (defvar jump-char-isearch-map
   (let ((map (make-sparse-keymap))
         (exception-list '(isearch-abort isearch-describe-key))
@@ -105,8 +115,10 @@
       (unless (memq cmd exception-list)
         (define-key map `[remap ,cmd] #'jump-char-process-char)))
     (set-keymap-parent map isearch-mode-map)
-    (define-key map (kbd ";") #'jump-char-repeat-forward)
-    (define-key map (kbd ",") #'jump-char-repeat-backward)
+    (unless (string= jump-char-key-forward "")
+      (define-key map (kbd jump-char-key-forward) #'jump-char-repeat-forward))
+    (unless (string= jump-char-key-backward "")
+      (define-key map (kbd jump-char-key-backward) #'jump-char-repeat-backward))
     (when (featurep 'ace-jump-mode)
       (define-key map (kbd "C-c C-c") #'jump-char-switch-to-ace)
       (define-key map (kbd "M-/") #'jump-char-switch-to-ace))

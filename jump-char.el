@@ -37,6 +37,7 @@
 ;;
 ;; Interface (while jumping):
 ;;
+;;   <char>   :: move to the next match in the current direction.
 ;;   ;        :: next match forward (towards end of buffer)
 ;;   ,        :: next match backward (towards beginning of buffer)
 ;;   C-c C-c  :: invoke ace-jump-mode if available (also <M-/>)
@@ -78,6 +79,14 @@
 
 
 (provide 'jump-char)
+
+(defgroup jump-char nil
+  "navigation by char")
+
+(defcustom jump-char-use-initial-char t
+  "Use initial char to move to the next match in the current direction"
+  :type 'boolean
+  :group 'jump-char)
 
 (require 'ace-jump-mode nil t)
 
@@ -241,7 +250,10 @@ Specifically, make sure point is at beginning of match."
                  (setq jump-char-initial-char last-command-event)
                  (when (= p (point))
                    (funcall repeat-command)))
-             (setq did-action-p nil)))
+             (if (and jump-char-use-initial-char 
+                      (eq last-command-event jump-char-initial-char))
+                 (funcall (if isearch-forward 'jump-char-repeat-forward 'jump-char-repeat-backward))
+               (setq did-action-p nil))))
           (t
            (setq did-action-p nil)))
     (unless did-action-p

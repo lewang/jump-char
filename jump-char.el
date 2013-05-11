@@ -11,9 +11,9 @@
 
 ;; Created: Mon Jan  9 22:41:43 2012 (+0800)
 ;; Version: 0.1
-;; Last-Updated: Sat May 11 16:02:33 2013 (+0800)
+;; Last-Updated: Sat May 11 16:09:24 2013 (+0800)
 ;;           By: Le Wang
-;;     Update #: 125
+;;     Update #: 126
 ;; URL: https://github.com/lewang/jump-char
 ;; Keywords:
 ;; Compatibility: 23+
@@ -90,13 +90,17 @@
 
 (require 'ace-jump-mode nil t)
 
-(defcustom jump-char-key-forward ";"
-  "Default key used to go to next occurence of the char"
+(defcustom jump-char-forward-key ";"
+  "Default key used to go to next occurence of the char.
+
+Set this to nil if you don't need it."
   :type 'string
   :group 'jump-char)
 
-(defcustom jump-char-key-backward ","
-  "Default key used to go to previous occurence of the char"
+(defcustom jump-char-backward-key ","
+  "Default key used to go to previous occurence of the char.
+
+Set this to nil if you don't need it."
   :type 'string
   :group 'jump-char)
 
@@ -115,10 +119,12 @@
       (unless (memq cmd exception-list)
         (define-key map `[remap ,cmd] #'jump-char-process-char)))
     (set-keymap-parent map isearch-mode-map)
-    (unless (string= jump-char-key-forward "")
-      (define-key map (kbd jump-char-key-forward) #'jump-char-repeat-forward))
-    (unless (string= jump-char-key-backward "")
-      (define-key map (kbd jump-char-key-backward) #'jump-char-repeat-backward))
+    (when jump-char-forward-key
+      (define-key map (read-kbd-macro jump-char-forward-key)
+        #'jump-char-repeat-forward))
+    (when jump-char-backward-key
+      (define-key map (read-kbd-macro jump-char-backward-key)
+        #'jump-char-repeat-backward))
     (when (featurep 'ace-jump-mode)
       (define-key map (kbd "C-c C-c") #'jump-char-switch-to-ace)
       (define-key map (kbd "M-/") #'jump-char-switch-to-ace))

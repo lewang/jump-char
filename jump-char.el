@@ -11,9 +11,9 @@
 
 ;; Created: Mon Jan  9 22:41:43 2012 (+0800)
 ;; Version: 0.1
-;; Last-Updated: Wed Mar 20 10:49:21 2013 (+0800)
+;; Last-Updated: Sat May 11 16:02:33 2013 (+0800)
 ;;           By: Le Wang
-;;     Update #: 124
+;;     Update #: 125
 ;; URL: https://github.com/lewang/jump-char
 ;; Keywords:
 ;; Compatibility: 23+
@@ -291,6 +291,8 @@ last input.
   (interactive "P")
   (if (consp arg)
       (ace-jump-line-mode)
+    ;; -LW- This shouldn't happen as a regular course, but it's been reported
+    ;; to happen.
     (unless jump-char-mode
       (puthash 'isearch-mode-map isearch-mode-map jump-char-store)
       (puthash 'isearch-search-fun-function isearch-search-fun-function jump-char-store)

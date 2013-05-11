@@ -11,9 +11,9 @@
 
 ;; Created: Mon Jan  9 22:41:43 2012 (+0800)
 ;; Version: 0.1
-;; Last-Updated: Sat May 11 16:09:24 2013 (+0800)
+;; Last-Updated: Sat May 11 17:58:34 2013 (+0800)
 ;;           By: Le Wang
-;;     Update #: 126
+;;     Update #: 131
 ;; URL: https://github.com/lewang/jump-char
 ;; Keywords:
 ;; Compatibility: 23+
@@ -321,8 +321,16 @@ last input.
   (interactive "P")
   (jump-char-forward arg 'backward))
 
+(defun jump-char-exit ()
+  "If a key should exit `jump-char' but cause no other effect,
+then bind it to this command in `jump-char-isearch-map'.
 
-
+e.g.
+       (eval-after-load \"jump-char\"
+         '(define-key jump-char-isearch-map (kbd \"<return>\") 'jump-char-exit))
+  "
+  (interactive)
+  (isearch-exit))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

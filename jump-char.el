@@ -11,9 +11,9 @@
 
 ;; Created: Mon Jan  9 22:41:43 2012 (+0800)
 ;; Version: 0.1
-;; Last-Updated: Sat May 11 17:58:34 2013 (+0800)
+;; Last-Updated: Thu May 30 01:58:45 2013 (+0800)
 ;;           By: Le Wang
-;;     Update #: 131
+;;     Update #: 132
 ;; URL: https://github.com/lewang/jump-char
 ;; Keywords:
 ;; Compatibility: 23+
@@ -194,6 +194,8 @@ expression suitable for jump-char.
              (set key value))
            jump-char-store)
   (setq jump-char-mode nil)
+  ;; leaving highlights of chars isn't really helpful
+  (lazy-highlight-cleanup t)
   (remove-hook 'isearch-update-post-hook 'jump-char-isearch-update-func)
   (remove-hook 'isearch-mode-end-hook 'jump-char-cleanup))
 

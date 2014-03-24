@@ -246,6 +246,11 @@ Specifically, make sure point is at beginning of match."
       (call-interactively 'ace-jump-char-mode)
     (ace-jump-char-mode jump-char-initial-char)))
 
+(defun jump-char-isearch-unread (keylist)
+  (if (fboundp 'isearch-unread)
+      (isearch-unread keylist)
+    (isearch-unread-key-sequence keylist)))
+
 (defun jump-char-process-char (&optional arg)
   (interactive "P")
   (let* ((did-action-p t)
@@ -277,7 +282,7 @@ Specifically, make sure point is at beginning of match."
           (t
            (setq did-action-p nil)))
     (unless did-action-p
-      (isearch-unread-key-sequence keylist)
+      (jump-char-isearch-unread keylist)
       (setq prefix-arg arg)
       (let ((search-nonincremental-instead nil))
         (isearch-exit)))))

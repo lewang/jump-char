@@ -11,9 +11,9 @@
 
 ;; Created: Mon Jan  9 22:41:43 2012 (+0800)
 ;; Version: 0.1
-;; Last-Updated: Thu May 30 01:58:45 2013 (+0800)
+;; Last-Updated: Fri Apr 25 17:24:10 2014 (-0400)
 ;;           By: Le Wang
-;;     Update #: 132
+;;     Update #: 133
 ;; URL: https://github.com/lewang/jump-char
 ;; Keywords:
 ;; Compatibility: 23+
@@ -108,7 +108,7 @@ Set this to nil if you don't need it."
   (let ((map (make-sparse-keymap))
         (exception-list '(isearch-abort isearch-describe-key))
         isearch-commands)
-    (flet ((remap (key def)
+    (cl-flet ((remap (key def)
                   (if (symbolp def)
                       (setq isearch-commands (cons def isearch-commands))
                     (when (keymapp def)

@@ -11,9 +11,7 @@
 
 ;; Created: Mon Jan  9 22:41:43 2012 (+0800)
 ;; Version: 0.1
-;; Last-Updated: Fri Apr 25 17:24:10 2014 (-0400)
 ;;           By: Le Wang
-;;     Update #: 133
 ;; URL: https://github.com/lewang/jump-char
 ;; Keywords:
 ;; Compatibility: 23+

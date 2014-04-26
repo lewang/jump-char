@@ -106,7 +106,7 @@ Set this to nil if you don't need it."
   (let ((map (make-sparse-keymap))
         (exception-list '(isearch-abort isearch-describe-key))
         isearch-commands)
-    (cl-flet ((remap (key def)
+    (flet ((remap (key def)
                   (if (symbolp def)
                       (setq isearch-commands (cons def isearch-commands))
                     (when (keymapp def)

@@ -102,16 +102,18 @@ Set this to nil if you don't need it."
   :type 'string
   :group 'jump-char)
 
+(defun jump-char-recursive-remap (key def)
+  ""
+  (if (symbolp def)
+      (setq isearch-commands (cons def isearch-commands))
+    (when (keymapp def)
+      (map-keymap 'jump-char-recursive-remap def))))
+
 (defvar jump-char-isearch-map
   (let ((map (make-sparse-keymap))
         (exception-list '(isearch-abort isearch-describe-key))
         isearch-commands)
-    (flet ((remap (key def)
-                  (if (symbolp def)
-                      (setq isearch-commands (cons def isearch-commands))
-                    (when (keymapp def)
-                      (map-keymap 'remap def)))))
-      (map-keymap 'remap isearch-mode-map))
+    (map-keymap 'jump-char-recursive-remap isearch-mode-map)
     (setq isearch-commands (delete-dups isearch-commands))
     (dolist (cmd isearch-commands)
       (unless (memq cmd exception-list)

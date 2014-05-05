@@ -250,7 +250,7 @@ Specifically, make sure point is at beginning of match."
 
 (defun jump-char-isearch-unread (keylist)
   (if (fboundp 'isearch-unread)
-      (isearch-unread keylist)
+      (apply 'isearch-unread keylist)
     (isearch-unread-key-sequence keylist)))
 
 (defun jump-char-process-char (&optional arg)

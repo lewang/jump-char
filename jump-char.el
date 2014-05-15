@@ -104,7 +104,7 @@ Set this to nil if you don't need it."
 
 (defvar jump-char-isearch-map
   (let ((map (make-sparse-keymap))
-        (exception-list '(isearch-abort isearch-describe-key))
+        (exception-list '(isearch-abort isearch-describe-key isearch-quote-char))
         isearch-commands
         (maps (list isearch-mode-map)))
     (while (car maps)

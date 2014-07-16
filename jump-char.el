@@ -76,8 +76,6 @@
 (eval-when-compile (require 'cl))
 
 
-(provide 'jump-char)
-
 (defgroup jump-char nil
   "navigation by char")
 
@@ -341,6 +339,8 @@ e.g.
   (interactive)
   (isearch-exit))
 
+
+(provide 'jump-char)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; jump-char.el ends here

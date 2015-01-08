@@ -294,12 +294,12 @@ Invokes `ace-jump-line-mode' when called with prefix.
 
 When jump-char is active:
 
-| key     | does                                              |
-|---------+---------------------------------------------------|
-| <char>  | move to the next match in the current direction.  |
-| ;       | next match forward (towards end of buffer)        |
-| ,       | next match backward (towards beginning of buffer) |
-| C-c C-c | invoke `ace-jump-mode' if available               |
+| key     | does                                                                           |
+|---------+--------------------------------------------------------------------------------|
+| <char>  | move to the next match in the current direction.                               |
+| ;       | next match forward (towards end of buffer) see `jump-char-forward-key'         |
+| ,       | next match backward (towards beginning of buffer) see `jump-char-backward-key' |
+| C-c C-c | invoke `ace-jump-mode' if available                                            |
 
 Any other key stops jump-char and edits as normal."
   (interactive "P")

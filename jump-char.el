@@ -289,18 +289,19 @@ Specifically, make sure point is at beginning of match."
 
 ;;;###autoload
 (defun jump-char-forward (arg &optional backward)
-  "With UNIVERSAL prefix arg <C-u>, invoke `ace-jump-line-mode'
+  "Prompt for a character, and jump to the next occurrence of that character.
+Invokes `ace-jump-line-mode' when called with prefix.
 
+When jump-char is active:
 
-; next
+| key     | does                                              |
+|---------+---------------------------------------------------|
+| <char>  | move to the next match in the current direction.  |
+| ;       | next match forward (towards end of buffer)        |
+| ,       | next match backward (towards beginning of buffer) |
+| C-c C-c | invoke `ace-jump-mode' if available               |
 
-, previous
-
-search_char next
-
-press current binding for `jump-char-forward' / `jump-char-backward' to reuse
-last input.
-"
+Any other key stops jump-char and edits as normal."
   (interactive "P")
   (if (consp arg)
       (ace-jump-line-mode)

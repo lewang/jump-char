@@ -100,7 +100,33 @@ Set this to nil if you don't need it."
   :type 'string
   :group 'jump-char)
 
-(defvar jump-char-isearch-map
+(defvar jump-char-mode nil)
+(defvar jump-char-store (make-hash-table :test 'eq :size 5))
+(defvar jump-char-lazy-highlight-face lazy-highlight-face)
+(defvar jump-char-initial-char nil)
+
+;;; isearch implementation changed as of Emacs 24.3
+(defvar jump-char-isearch-point-func
+  (dolist (v '(isearch-point-state isearch--state-point)
+             (error "I don't understand this isearch."))
+    (when (fboundp v)
+      (return v))))
+
+
+(defsubst jump-char-equal (l r)
+  (and (not (null l))
+       (not (null r))
+       (char-equal l r)))
+
+(defsubst jump-char-printing-p (event-v)
+  (when (eq (length event-v) 1)
+    (let ((event (aref event-v 0)))
+      (and (characterp event)
+           (>= event ?\s)
+           (<= event (max-char))))))
+
+(defun jump-char-isearch-map ()
+  "Return `isearch-mode-map' without most isearch functionality."
   (let ((map (make-sparse-keymap))
         (exception-list '(isearch-abort isearch-describe-key isearch-quote-char))
         isearch-commands
@@ -129,30 +155,7 @@ Set this to nil if you don't need it."
       (define-key map (kbd "C-c C-c") #'jump-char-switch-to-ace)
       (define-key map (kbd "M-/") #'jump-char-switch-to-ace))
     map))
-(defvar jump-char-mode nil)
-(defvar jump-char-store (make-hash-table :test 'eq :size 5))
-(defvar jump-char-lazy-highlight-face lazy-highlight-face)
-(defvar jump-char-initial-char nil)
 
-;;; isearch implementation changed as of Emacs 24.3
-(defvar jump-char-isearch-point-func
-  (dolist (v '(isearch-point-state isearch--state-point)
-             (error "I don't understand this isearch."))
-    (when (fboundp v)
-      (return v))))
-
-
-(defsubst jump-char-equal (l r)
-  (and (not (null l))
-       (not (null r))
-       (char-equal l r)))
-
-(defsubst jump-char-printing-p (event-v)
-  (when (eq (length event-v) 1)
-    (let ((event (aref event-v 0)))
-      (and (characterp event)
-           (>= event ?\s)
-           (<= event (max-char))))))
 
 (defun jump-char-isearch-regexp-compile (string)
   "Transform a normal isearch query string to a regular
@@ -315,7 +318,7 @@ Any other key stops jump-char and edits as normal."
       (add-hook 'isearch-mode-end-hook 'jump-char-cleanup)
       (add-hook 'isearch-update-post-hook 'jump-char-isearch-update-func)
       (setq jump-char-mode t)
-      (setq isearch-mode-map jump-char-isearch-map)
+      (setq isearch-mode-map (jump-char-isearch-map))
       (setq isearch-search-fun-function 'jump-char-search-fun-function)
       (setq lazy-highlight-face jump-char-lazy-highlight-face))
     (funcall (if backward

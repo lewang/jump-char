@@ -100,6 +100,12 @@ Set this to nil if you don't need it."
   :type 'string
   :group 'jump-char)
 
+
+(defcustom jump-char-set-mark nil
+  "When t, activate mark when starting a jump-char command."
+  :type 'boolean
+  :group 'jump-char)
+
 (defvar jump-char-mode nil)
 (defvar jump-char-store (make-hash-table :test 'eq :size 5))
 (defvar jump-char-lazy-highlight-face lazy-highlight-face)
@@ -321,6 +327,9 @@ Any other key stops jump-char and edits as normal."
       (setq isearch-mode-map (jump-char-isearch-map))
       (setq isearch-search-fun-function 'jump-char-search-fun-function)
       (setq lazy-highlight-face jump-char-lazy-highlight-face))
+    (when (and jump-char-set-mark
+               (not (use-region-p)))
+      (set-mark-command nil))
     (funcall (if backward
                  'isearch-backward
                'isearch-forward)

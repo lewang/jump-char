@@ -100,6 +100,7 @@ Set this to nil if you don't need it."
   :type 'string
   :group 'jump-char)
 
+
 (defvar jump-char-mode nil)
 (defvar jump-char-store (make-hash-table :test 'eq :size 5))
 (defvar jump-char-lazy-highlight-face lazy-highlight-face)
@@ -293,22 +294,8 @@ Specifically, make sure point is at beginning of match."
       (let ((search-nonincremental-instead nil))
         (isearch-exit)))))
 
-;;;###autoload
-(defun jump-char-forward (arg &optional backward)
-  "Prompt for a character, and jump to the next occurrence of that character.
-Invokes `ace-jump-line-mode' when called with prefix.
-
-When jump-char is active:
-
-| key     | does                                                                           |
-|---------+--------------------------------------------------------------------------------|
-| <char>  | move to the next match in the current direction.                               |
-| ;       | next match forward (towards end of buffer) see `jump-char-forward-key'         |
-| ,       | next match backward (towards beginning of buffer) see `jump-char-backward-key' |
-| C-c C-c | invoke `ace-jump-mode' if available                                            |
-
-Any other key stops jump-char and edits as normal."
-  (interactive "P")
+(defun jump-char-start-func (arg &optional backward set-mark)
+  "Non-interactive engine."
   (if (consp arg)
       (ace-jump-line-mode)
     ;; -LW- This shouldn't happen as a regular course, but it's been reported
@@ -324,16 +311,50 @@ Any other key stops jump-char and edits as normal."
       (setq isearch-mode-map (jump-char-isearch-map))
       (setq isearch-search-fun-function 'jump-char-search-fun-function)
       (setq lazy-highlight-face jump-char-lazy-highlight-face))
+    (when (and set-mark
+             (not (use-region-p)))
+      (set-mark-command nil))
     (funcall (if backward
                  'isearch-backward
                'isearch-forward)
              nil t)))
 
 ;;;###autoload
+(defun jump-char-forward (arg)
+  "Prompt for a character, and jump to the next occurrence of that character.
+Invokes `ace-jump-line-mode' when called with prefix.
+
+When jump-char is active:
+
+| key     | does                                                                           |
+|---------+--------------------------------------------------------------------------------|
+| <char>  | move to the next match in the current direction.                               |
+| ;       | next match forward (towards end of buffer) see `jump-char-forward-key'         |
+| ,       | next match backward (towards beginning of buffer) see `jump-char-backward-key' |
+| C-c C-c | invoke `ace-jump-mode' if available                                            |
+
+Any other key stops jump-char and edits as normal."
+  (interactive "P")
+  (jump-char-start-func arg))
+
+;;;###autoload
 (defun jump-char-backward (arg)
   "backward movement version of `jump-char-forward'"
   (interactive "P")
-  (jump-char-forward arg 'backward))
+  (jump-char-start-func arg 'backward))
+
+
+;;;###autoload
+(defun jump-char-forward-set-mark (arg)
+  "See `jump-char-forward', set-mark if not active."
+  (interactive "P")
+  (jump-char-start-func arg nil 'set-mark))
+
+;;;###autoload
+(defun jump-char-backward-set-mark (arg)
+  "See `jump-char-backward', set-mark if not active."
+  (interactive "P")
+  (jump-char-start-func arg 'backward 'set-mark))
 
 (defun jump-char-exit ()
   "If a key should exit `jump-char' but cause no other effect,

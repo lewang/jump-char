@@ -84,7 +84,13 @@
   :type 'boolean
   :group 'jump-char)
 
-(require 'ace-jump-mode nil t)
+(defconst jump-char-ace-jump-char-defun
+  (cond ((fboundp 'ace-jump-char-mode) #'ace-jump-char-mode)
+        ((fboundp 'avy-goto-char) #'avy-goto-char)))
+
+(defconst jump-char-ace-jump-line-defun
+  (cond ((fboundp 'ace-jump-line-mode) #'ace-jump-line-mode)
+        ((fboundp 'avy-goto-line) #'avy-goto-line)))
 
 (defcustom jump-char-forward-key ";"
   "Default key used to go to next occurence of the char.
@@ -154,7 +160,7 @@ Set this to nil if you don't need it."
     (when jump-char-backward-key
       (define-key map (read-kbd-macro jump-char-backward-key)
         #'jump-char-repeat-backward))
-    (when (featurep 'ace-jump-mode)
+    (when jump-char-ace-jump-char-defun
       (define-key map (kbd "C-c C-c") #'jump-char-switch-to-ace)
       (define-key map (kbd "M-/") #'jump-char-switch-to-ace))
     map))
@@ -249,8 +255,8 @@ Specifically, make sure point is at beginning of match."
   (let ((search-nonincremental-instead nil))
     (isearch-exit))
   (if (null jump-char-initial-char)
-      (call-interactively 'ace-jump-char-mode)
-    (ace-jump-char-mode jump-char-initial-char)))
+      (call-interactively jump-char-ace-jump-char-defun)
+    (funcall jump-char-ace-jump-char-defun jump-char-initial-char)))
 
 (defun jump-char-isearch-unread (keylist)
   (if (fboundp 'isearch-unread)
@@ -296,7 +302,9 @@ Specifically, make sure point is at beginning of match."
 (defun jump-char-start-func (arg &optional backward set-mark)
   "Non-interactive engine."
   (if (consp arg)
-      (ace-jump-line-mode)
+      (if jump-char-ace-jump-line-defun
+          (call-interactively jump-char-ace-jump-line-defun)
+        (error "No ace jump pacakge installed"))
     ;; -LW- This shouldn't happen as a regular course, but it's been reported
     ;; to happen.
     (unless jump-char-mode
@@ -319,7 +327,7 @@ Specifically, make sure point is at beginning of match."
 ;;;###autoload
 (defun jump-char-forward (arg)
   "Prompt for a character, and jump to the next occurrence of that character.
-Invokes `ace-jump-line-mode' when called with prefix.
+Invokes `ace-jump-line-mode' or `avy-goto-line' when called with prefix.
 
 When jump-char is active:
 
@@ -328,7 +336,7 @@ When jump-char is active:
 | <char>  | move to the next match in the current direction.                               |
 | ;       | next match forward (towards end of buffer) see `jump-char-forward-key'         |
 | ,       | next match backward (towards beginning of buffer) see `jump-char-backward-key' |
-| C-c C-c | invoke `ace-jump-mode' if available                                            |
+| C-c C-c | invoke `ace-jump-mode' or `avy-goto-line' if available                         |
 
 Any other key stops jump-char and edits as normal."
   (interactive "P")

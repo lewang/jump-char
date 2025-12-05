@@ -359,7 +359,7 @@ then bind it to this command in `jump-char-isearch-map'.
 
 e.g.
        (eval-after-load \"jump-char\"
-         '(define-key jump-char-isearch-map (kbd \"<return>\") 'jump-char-exit))
+         '(define-key jump-char-base-map (kbd \"<return>\") 'jump-char-exit))
   "
   (interactive)
   (isearch-exit))

@@ -224,9 +224,9 @@ Specifically, make sure point is at beginning of match."
                                                 ad-return-value)
                       'face 'minibuffer-prompt))))
 
-(defun jump-char-repeat-forward ()
+(defun jump-char-repeat-forward (&optional arg)
   "keep point at beginning of match"
-  (interactive)
+  (interactive "P")
   (if (and (zerop (length isearch-string))
            (jump-char-printing-p (this-command-keys-vector)))
       (jump-char-process-char)
@@ -234,14 +234,14 @@ Specifically, make sure point is at beginning of match."
       (if isearch-forward
           (goto-char (funcall jump-char-isearch-point-func (car isearch-cmds)))
         (goto-char isearch-other-end)))
-    (isearch-repeat-forward)))
+    (isearch-repeat-forward arg)))
 
-(defun jump-char-repeat-backward ()
-  (interactive)
+(defun jump-char-repeat-backward (&optional arg)
+  (interactive "P")
   (if (and (zerop (length isearch-string))
            (jump-char-printing-p (this-command-keys-vector)))
       (jump-char-process-char)
-    (isearch-repeat-backward)))
+    (isearch-repeat-backward arg)))
 
 (defun jump-char-switch-to-ace ()
   "start ace-jump-mode"
@@ -269,21 +269,20 @@ Specifically, make sure point is at beginning of match."
          (repeat-command (if isearch-forward
                              'jump-char-repeat-forward
                            'jump-char-repeat-backward)))
-    ;; (message "this-key-is-global-jump-char %s this-key-global-cmd %s" this-key-is-global-jump-char this-key-global-cmd)
     (cond ((and this-key-is-global-jump-char
                 (zerop (length isearch-string)))
            (setq isearch-string (string jump-char-initial-char))
-           (funcall repeat-command))
+           (funcall repeat-command arg))
           ((jump-char-printing-p command-only-key-v)
            (if (zerop (length isearch-string))
                (let ((p (point)))
                  (isearch-printing-char)
                  (setq jump-char-initial-char last-command-event)
                  (when (= p (point))
-                   (funcall repeat-command)))
+                   (funcall repeat-command arg)))
              (if (and jump-char-use-initial-char 
                       (eq last-command-event jump-char-initial-char))
-                 (funcall (if isearch-forward 'jump-char-repeat-forward 'jump-char-repeat-backward))
+                 (funcall (if isearch-forward 'jump-char-repeat-forward 'jump-char-repeat-backward) arg)
                (setq did-action-p nil))))
           (t
            (setq did-action-p nil)))

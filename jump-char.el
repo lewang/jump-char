@@ -2,7 +2,7 @@
 
 ;; this file is not part of Emacs
 
-;; Copyright (C) 2012 Le Wang
+;; Copyright (C) 2025 Le Wang
 ;; Author: Le Wang
 ;; Maintainer: Le Wang
 ;; Description: navigation by char
@@ -11,7 +11,7 @@
 
 ;; Created: Mon Jan  9 22:41:43 2012 (+0800)
 ;; Version: 0.1
-;;           By: Le Wang
+;; By: Le Wang
 ;; URL: https://github.com/lewang/jump-char
 ;; Keywords:
 ;; Compatibility: 23+
